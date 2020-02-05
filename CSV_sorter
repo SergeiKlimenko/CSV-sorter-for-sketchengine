@@ -1,0 +1,61 @@
+#! /usr/bin/env python3
+
+# Open a CSV file with a list of lexical units in one column and their frequencies in the other.
+
+import csv
+import re
+
+# Open the data file downloaded from sketchengine
+datafile = open('mahdata.csv', encoding='ISO-8859-1')
+dataReader = csv.reader(datafile)
+data = list(dataReader)
+
+# The regexs to find items with numerals, with consonant clusters, with a dash or a dot, and with only one syllable following 'ik(in)a-', since they are more likely not to be causal voice forms
+numwords_re = re.compile('isa|lawa|tlo|apat|lima|anim|pito|walo|siyam|labin|una|sampu', re.IGNORECASE)
+pronouns_re = re.compile('ikaw|ikay', re.IGNORECASE)
+vowels_re = re.compile('[aeiou]', re.IGNORECASE)
+
+# Make lists for trash data to be reviewed after the program runs
+numerals = list()
+numwords = list()
+pronouns = list()
+notCV = list()
+
+# The function for appending data items to the lists above and removing it from the original data list
+def app_del(lst, data, item):
+    lst.append(item)
+    del data[data.index(item)]
+    return lst, data
+
+    
+# Where the data separation happens
+for i in data[:]:
+    if re.search('\d', i[0]):
+        numerals, data = app_del(numerals, data, i)
+    elif re.search(numwords_re, i[0]):
+        numwords, data = app_del(numwords, data, i)
+    elif re.search(pronouns_re, i[0]):
+        pronouns, data = app_del(pronouns, data, i)
+    elif re.search('^ik(in)?a[^aeiou]{2}', i[0]):
+        notCV, data = app_del(notCV, data, i)
+    elif re.search('^ik(in)?a.{2,3}$', i[0]):
+        notCV, data = app_del(notCV, data, i)
+
+
+# Sort the lists in descending order of their length
+lsts = [data, numerals, numwords, pronouns, notCV]
+lengths = [(l, len(l)) for l in lsts]
+lengths.sort(key=lambda tup: tup[1], reverse=True)
+for i in lengths:
+    print(i[1])
+for i in range(len(lsts)):
+    with open('mahdataoutput{}.csv'.format(i+1), 'w') as output:
+        writer = csv.writer(output)
+        for tpl in lsts[i]:
+            writer.writerow(tpl)
+
+        
+    
+
+
+
