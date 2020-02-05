@@ -26,8 +26,7 @@ def app_del(lst, data, item):
     lst.append(item)
     del data[data.index(item)]
     return lst, data
-
-    
+   
 # Where the data separation happens
 for i in data[:]:
     if re.search('\d', i[0]):
@@ -41,21 +40,14 @@ for i in data[:]:
     elif re.search('^ik(in)?a.{2,3}$', i[0]):
         notCV, data = app_del(notCV, data, i)
 
-
 # Sort the lists in descending order of their length
 lsts = [data, numerals, numwords, pronouns, notCV]
 lengths = [(l, len(l)) for l in lsts]
 lengths.sort(key=lambda tup: tup[1], reverse=True)
-for i in lengths:
-    print(i[1])
+
+# Write the lists into files
 for i in range(len(lsts)):
     with open('mahdataoutput{}.csv'.format(i+1), 'w') as output:
         writer = csv.writer(output)
         for tpl in lsts[i]:
             writer.writerow(tpl)
-
-        
-    
-
-
-
